@@ -6,6 +6,9 @@ import HomeMenuScreen from '../HomeMenuScreen';
 import FoodSelectionScreen from '../FoodSelectionScreen';
 import OrderSummaryScreen from '../OrderSummaryScreen';
 import PurchaseHistoryScreen from '../PurchaseHistoryScreen';
+import ProductDetailScreen from '../ProductDetailScreen';
+import OrderTrackingScreen from '../OrderTrackingScreen';
+import SpecialOffersScreen from '../SpecialOffersScreen';
 
 const Stack = createStackNavigator();
 
@@ -49,6 +52,21 @@ const AppNavigator = () => {
             name="PurchaseHistory" 
             component={PurchaseHistoryScreen} 
             options={{ title: 'Historial de Compras' }}
+          />
+          <Stack.Screen 
+            name="ProductDetail" 
+            component={ProductDetailScreen} 
+            options={{ title: 'Detalle del Producto' }}
+          />
+          <Stack.Screen 
+            name="OrderTracking" 
+            component={OrderTrackingScreen} 
+            options={{ title: ' Seguir Pedido' }}
+          />
+          <Stack.Screen 
+            name="SpecialOffers" 
+            component={SpecialOffersScreen} 
+            options={{ title: 'Ofertas Especiales' }}
           />
         </>
       )}
