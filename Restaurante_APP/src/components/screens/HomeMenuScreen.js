@@ -7,7 +7,7 @@ import {
   ScrollView,
   Alert
 } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from './context/AuthContext';
 
 const HomeMenuScreen = ({ navigation }) => {
   const { logout, user } = useAuth();
@@ -29,21 +29,21 @@ const HomeMenuScreen = ({ navigation }) => {
       description: 'Select food and drinks',
       screen: 'FoodSelection',
       color: '#FF9F1C',
-      disabled: true // Will enable when screen is created
+      disabled: false
     },
     {
       title: '🛒 View Current Order',
       description: 'Check your current order',
       screen: 'OrderSummary',
       color: '#2EC4B6',
-      disabled: true // Will enable when screen is created
+      disabled: false
     },
     {
       title: '📊 Purchase History',
       description: 'Check your previous orders',
       screen: 'PurchaseHistory',
       color: '#E71D36',
-      disabled: true // Will enable when screen is created
+      disabled: false
     }
   ];
 

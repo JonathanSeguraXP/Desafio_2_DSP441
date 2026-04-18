@@ -1,8 +1,11 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useAuth } from '../context/AuthContext';
-import LoginScreen from '../screens/LoginScreen';
-import HomeMenuScreen from '../screens/HomeMenuScreen';
+import LoginScreen from '../LoginScreen';
+import HomeMenuScreen from '../HomeMenuScreen';
+import FoodSelectionScreen from '../FoodSelectionScreen';
+import OrderSummaryScreen from '../OrderSummaryScreen';
+import PurchaseHistoryScreen from '../PurchaseHistoryScreen';
 
 const Stack = createStackNavigator();
 
@@ -15,7 +18,7 @@ const AppNavigator = () => {
 
   return (
     <Stack.Navigator screenOptions={{
-      headerStyle: { backgroundColor: '#E85D04' },
+      headerStyle: { backgroundColor: '#006341' },
       headerTintColor: '#FFF',
       headerTitleStyle: { fontWeight: 'bold' }
     }}>
@@ -26,11 +29,28 @@ const AppNavigator = () => {
           options={{ headerShown: false }}
         />
       ) : (
-        <Stack.Screen 
-          name="HomeMenu" 
-          component={HomeMenuScreen} 
-          options={{ title: 'Main Menu' }}
-        />
+        <>
+          <Stack.Screen 
+            name="HomeMenu" 
+            component={HomeMenuScreen} 
+            options={{ title: 'Menú Principal' }}
+          />
+          <Stack.Screen 
+            name="FoodSelection" 
+            component={FoodSelectionScreen} 
+            options={{ title: 'Seleccionar Comida' }}
+          />
+          <Stack.Screen 
+            name="OrderSummary" 
+            component={OrderSummaryScreen} 
+            options={{ title: 'Resumen del Pedido' }}
+          />
+          <Stack.Screen 
+            name="PurchaseHistory" 
+            component={PurchaseHistoryScreen} 
+            options={{ title: 'Historial de Compras' }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );
