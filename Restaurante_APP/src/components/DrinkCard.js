@@ -1,9 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
+const DRINK_IMAGES = {
+  101: '🥛',
+  102: '🩸',
+  103: '☕',
+  104: '🍹',
+  105: '🍺',
+};
+
 export default function DrinkCard({ drink, quantity, onIncrease, onDecrease }) {
   return (
     <View style={styles.card}>
+      <View style={styles.imageContainer}>
+        <Text style={styles.emoji}>{DRINK_IMAGES[drink.id] || '🥤'}</Text>
+      </View>
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{drink.name}</Text>
         <Text style={styles.description}>{drink.description}</Text>
@@ -29,13 +40,24 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  imageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  emoji: {
+    fontSize: 32,
   },
   infoContainer: {
     flex: 1,

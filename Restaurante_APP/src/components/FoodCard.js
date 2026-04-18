@@ -1,9 +1,25 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+
+const FOOD_IMAGES = {
+  1: '🌮',
+  2: '🌯',
+  3: '🫔',
+  4: '🧀',
+  5: '🥟',
+  6: '🫓',
+  7: '🫑',
+  8: '🍲',
+  9: '🍗',
+  10: '🌯',
+};
 
 export default function FoodCard({ food, quantity, onIncrease, onDecrease }) {
   return (
     <View style={styles.card}>
+      <View style={styles.imageContainer}>
+        <Text style={styles.emoji}>{FOOD_IMAGES[food.id] || '🍽️'}</Text>
+      </View>
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{food.name}</Text>
         <Text style={styles.description}>{food.description}</Text>
@@ -29,13 +45,24 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  imageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  emoji: {
+    fontSize: 32,
   },
   infoContainer: {
     flex: 1,
