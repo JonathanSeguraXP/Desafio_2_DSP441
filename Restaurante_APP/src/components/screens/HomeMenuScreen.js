@@ -14,42 +14,56 @@ const HomeMenuScreen = ({ navigation }) => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
+      'Cerrar Sesión',
+      '¿Estás seguro de que quieres cerrar sesión?',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: logout }
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cerrar', style: 'destructive', onPress: logout }
       ]
     );
   };
 
   const menuOptions = [
     {
-      title: '🍽️ Order Food',
-      description: 'Select food and drinks',
+      title: '🍽️ Ordenar Comida',
+      description: 'Selecciona alimentos y bebidas',
       screen: 'FoodSelection',
       color: '#FF9F1C',
       disabled: false
     },
     {
-      title: '🛒 View Current Order',
-      description: 'Check your current order',
+      title: '🛒 Mi Pedido Actual',
+      description: 'Ver tu orden actual',
       screen: 'OrderSummary',
       color: '#2EC4B6',
       disabled: false
     },
     {
-      title: '📊 Purchase History',
-      description: 'Check your previous orders',
+      title: '🚚 Seguimiento',
+      description: 'Seguir estado del pedido',
+      screen: 'OrderTracking',
+      color: '#9B59B6',
+      disabled: false
+    },
+    {
+      title: '📊 Historial',
+      description: 'Ver pedidos anteriores',
       screen: 'PurchaseHistory',
       color: '#E71D36',
+      disabled: false
+    },
+    {
+      title: '🔥 Ofertas',
+      description: 'Promociones del día',
+      screen: 'SpecialOffers',
+      color: '#CE1126',
       disabled: false
     }
   ];
 
   const handleNavigation = (screen, disabled) => {
     if (disabled) {
-      Alert.alert('Coming Soon', 'This feature will be available in the next commit!');
+      Alert.alert('Próximamente', '¡Esta función estará disponible pronto!');
       return;
     }
     navigation.navigate(screen);
@@ -58,8 +72,8 @@ const HomeMenuScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcome}>Welcome, {user?.username}!</Text>
-        <Text style={styles.subtitle}>What would you like to do today?</Text>
+        <Text style={styles.welcome}>¡Bienvenido, {user?.username}!</Text>
+        <Text style={styles.subtitle}>¿Qué quieres hacer hoy?</Text>
       </View>
 
       <View style={styles.menuContainer}>
@@ -77,7 +91,7 @@ const HomeMenuScreen = ({ navigation }) => {
             <Text style={styles.menuDescription}>{option.description}</Text>
             {option.disabled && (
               <View style={styles.comingSoonBadge}>
-                <Text style={styles.comingSoonText}>Coming Soon</Text>
+                <Text style={styles.comingSoonText}>Próximamente</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -85,7 +99,7 @@ const HomeMenuScreen = ({ navigation }) => {
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Sign Out</Text>
+        <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -98,7 +112,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
-    backgroundColor: '#E85D04',
+    backgroundColor: '#006341',
   },
   welcome: {
     fontSize: 24,
