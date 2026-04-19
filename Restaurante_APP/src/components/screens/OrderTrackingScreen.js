@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, Animated, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, Animated, TouchableOpacity, RefreshControl } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './context/AuthContext';
 
@@ -26,15 +26,38 @@ const NEXT_STATUS = {
 };
 
 export default function OrderTrackingScreen({ route }) {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [animatedValues] = useState(STEPS.map(() => new Animated.Value(0)));
+  const intervalRef = useRef(null);
   const selectedOrderId = route.params?.orderId;
+  const AUTO_REFRESH_INTERVAL = 10000; // 10 segundos
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadOrders();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     loadOrders();
   }, []);
+
+  useEffect(() => {
+    if (user?.role === 'cliente') {
+      intervalRef.current = setInterval(() => {
+        loadOrders();
+      }, AUTO_REFRESH_INTERVAL);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [user?.role]);
 
   useEffect(() => {
     if (orders.length > 0) {
@@ -60,7 +83,7 @@ export default function OrderTrackingScreen({ route }) {
       const savedOrders = await AsyncStorage.getItem('orders');
       if (savedOrders) {
         let allOrders = JSON.parse(savedOrders);
-        if (!isAdmin) {
+        if (user?.role === 'cliente') {
           allOrders = allOrders.filter(o => o.username === user?.username);
         }
         setOrders(allOrders);
@@ -115,12 +138,21 @@ export default function OrderTrackingScreen({ route }) {
 
   const activeOrders = orders.filter(o => o.status !== 'Entregado');
 
+  const isManager = user?.role === 'admin' || user?.role === 'cocina';
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>🚚 Estado del Pedido</Text>
-        {!isAdmin && (
-          <Text style={styles.headerSubtitle}>Hola {user?.username}</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>🚚 Estado del Pedido</Text>
+          {user?.role === 'cliente' && (
+            <TouchableOpacity onPress={onRefresh}>
+              <Text style={styles.refreshButton}>🔄</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {user?.role === 'cliente' && (
+          <Text style={styles.headerSubtitle}>Auto-actualizando cada 10s</Text>
         )}
       </View>
 
@@ -137,7 +169,7 @@ export default function OrderTrackingScreen({ route }) {
               <View style={styles.orderHeader}>
                 <View>
                   <Text style={styles.orderId}>Pedido #{order.id}</Text>
-                  {!isAdmin && (
+                  {isManager && (
                     <Text style={styles.orderUser}>Usuario: {order.username}</Text>
                   )}
                 </View>
@@ -237,9 +269,9 @@ export default function OrderTrackingScreen({ route }) {
                 <Text style={styles.total}>${order.total}</Text>
               </View>
 
-              {isAdmin && order.status !== 'Entregado' && (
+              {isManager && order.status !== 'Entregado' && (
                 <View style={styles.adminButtons}>
-                  <Text style={styles.adminTitle}>🔧 Simular Estado (Admin)</Text>
+                  <Text style={styles.adminTitle}>🔧 Cambiar Estado ({user?.role})</Text>
                   <TouchableOpacity 
                     style={styles.simulateButton}
                     onPress={() => simulateStatusChange(order.id)}
@@ -274,10 +306,19 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
   },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.white,
+  },
+  refreshButton: {
+    fontSize: 24,
   },
   headerSubtitle: {
     fontSize: 14,
