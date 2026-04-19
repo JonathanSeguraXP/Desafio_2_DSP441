@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from './context/AuthContext';
 
 const COLORS = {
   green: '#006341',
@@ -10,6 +11,7 @@ const COLORS = {
 };
 
 export default function PurchaseHistoryScreen() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +23,11 @@ export default function PurchaseHistoryScreen() {
     try {
       const savedOrders = await AsyncStorage.getItem('orders');
       if (savedOrders) {
-        setOrders(JSON.parse(savedOrders));
+        let allOrders = JSON.parse(savedOrders);
+        if (user?.role === 'cliente') {
+          allOrders = allOrders.filter(o => o.username === user?.username);
+        }
+        setOrders(allOrders);
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudo cargar el historial');
