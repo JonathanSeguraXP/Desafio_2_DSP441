@@ -4,8 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const AuthContext = createContext();
 
 const USERS = {
-  admin: { password: '123456', role: 'admin', username: 'admin' },
-  cliente: { password: 'cliente123', role: 'cliente', username: 'cliente' },
+  admin: { password: '123456', role: 'admin', username: 'admin', fullName: 'Administrador' },
+  cliente: { password: 'cliente123', role: 'cliente', username: 'cliente', fullName: 'Cliente' },
+  cocina: { password: 'cocina123', role: 'cocina', username: 'cocina', fullName: 'Cocina' },
 };
 
 export const AuthProvider = ({ children }) => {
@@ -20,6 +21,7 @@ export const AuthProvider = ({ children }) => {
         const userData = { 
           username, 
           role: foundUser.role,
+          fullName: foundUser.fullName,
           loginTime: new Date().toISOString() 
         };
         await AsyncStorage.setItem('@user_session', JSON.stringify(userData));
