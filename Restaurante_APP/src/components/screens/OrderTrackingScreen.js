@@ -30,6 +30,7 @@ export default function OrderTrackingScreen({ route }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(null);
   const [animatedValues] = useState(STEPS.map(() => new Animated.Value(0)));
   const intervalRef = useRef(null);
   const selectedOrderId = route.params?.orderId;
@@ -38,6 +39,7 @@ export default function OrderTrackingScreen({ route }) {
   const onRefresh = async () => {
     setRefreshing(true);
     await loadOrders();
+    setLastRefresh(new Date().toLocaleTimeString());
     setRefreshing(false);
   };
 
@@ -152,7 +154,9 @@ export default function OrderTrackingScreen({ route }) {
           )}
         </View>
         {user?.role === 'cliente' && (
-          <Text style={styles.headerSubtitle}>Auto-actualizando cada 10s</Text>
+          <Text style={styles.headerSubtitle}>
+            Auto-actualizando cada 10s {lastRefresh && `(última: ${lastRefresh})`}
+          </Text>
         )}
       </View>
 
