@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, Animated, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from './context/AuthContext';
 
@@ -9,6 +9,7 @@ const COLORS = {
   white: '#FFFFFF',
   gold: '#D4AF37',
   lightGray: '#F5F5F5',
+  purple: '#9B59B6',
 };
 
 const STEPS = [
@@ -17,6 +18,12 @@ const STEPS = [
   { key: 'Enviado', label: 'En Camino', emoji: '🚚', description: 'Tu pedido está en camino' },
   { key: 'Entregado', label: 'Entregado', emoji: '✅', description: '¡Disfruta tu comida!' },
 ];
+
+const NEXT_STATUS = {
+  'Pendiente': 'Preparando',
+  'Preparando': 'Enviado',
+  'Enviado': 'Entregado',
+};
 
 export default function OrderTrackingScreen({ route }) {
   const { user, isAdmin } = useAuth();
@@ -78,6 +85,24 @@ export default function OrderTrackingScreen({ route }) {
       'Entregado': 'Listo'
     };
     return times[status] || '-';
+  };
+
+  const simulateStatusChange = async (orderId) => {
+    const allOrdersKey = 'orders';
+    try {
+      const savedOrders = await AsyncStorage.getItem(allOrdersKey);
+      if (savedOrders) {
+        let allOrders = JSON.parse(savedOrders);
+        const orderIndex = allOrders.findIndex(o => o.id === orderId);
+        if (orderIndex >= 0 && NEXT_STATUS[allOrders[orderIndex].status]) {
+          allOrders[orderIndex].status = NEXT_STATUS[allOrders[orderIndex].status];
+          await AsyncStorage.setItem(allOrdersKey, JSON.stringify(allOrders));
+          loadOrders();
+        }
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
   };
 
   if (loading) {
@@ -212,13 +237,25 @@ export default function OrderTrackingScreen({ route }) {
                 <Text style={styles.total}>${order.total}</Text>
               </View>
 
-              {!isAdmin && (
-                <View style={styles.infoBox}>
-                  <Text style={styles.infoBoxText}>
-                    ℹ️ Usa el código #{order.id} al recibir tu pedido
-                  </Text>
+              {isAdmin && order.status !== 'Entregado' && (
+                <View style={styles.adminButtons}>
+                  <Text style={styles.adminTitle}>🔧 Simular Estado (Admin)</Text>
+                  <TouchableOpacity 
+                    style={styles.simulateButton}
+                    onPress={() => simulateStatusChange(order.id)}
+                  >
+                    <Text style={styles.simulateButtonText}>
+                      ➡️ Siguiente: {NEXT_STATUS[order.status]}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               )}
+              
+              <View style={styles.infoBox}>
+                <Text style={styles.infoBoxText}>
+                  ℹ️ Usa el código #{order.id} al recibir tu pedido
+                </Text>
+              </View>
             </View>
           );
         })
@@ -426,6 +463,30 @@ const styles = StyleSheet.create({
   infoBoxText: {
     fontSize: 12,
     color: COLORS.gold,
+    fontWeight: 'bold',
+  },
+  adminButtons: {
+    backgroundColor: COLORS.purple,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  adminTitle: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  simulateButton: {
+    backgroundColor: COLORS.white,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  simulateButtonText: {
+    color: COLORS.purple,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
