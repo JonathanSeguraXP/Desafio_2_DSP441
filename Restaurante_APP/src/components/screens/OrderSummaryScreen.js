@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from './context/AuthContext';
 
 const COLORS = {
   green: '#006341',
@@ -10,6 +11,7 @@ const COLORS = {
 };
 
 export default function OrderSummaryScreen() {
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -57,6 +59,7 @@ export default function OrderSummaryScreen() {
     try {
       const order = {
         id: Date.now(),
+        username: user.username,
         items: cartItems,
         total: calculateTotal(),
         date: new Date().toISOString(),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, Animated } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from './context/AuthContext';
 
 const COLORS = {
   green: '#006341',
@@ -14,23 +15,48 @@ const STEPS = [
   { key: 'Pendiente', label: 'Pedido Recibido', emoji: '📝', description: 'Tu pedido ha sido confirmado' },
   { key: 'Preparando', label: 'En Preparación', emoji: '👨‍🍳', description: 'Estamos preparando tu comida' },
   { key: 'Enviado', label: 'En Camino', emoji: '🚚', description: 'Tu pedido está en camino' },
-  { key: 'Entregado', label: 'Entregado', emoji: '✅', description: 'Disfruta tu comida' },
+  { key: 'Entregado', label: 'Entregado', emoji: '✅', description: '¡Disfruta tu comida!' },
 ];
 
 export default function OrderTrackingScreen({ route }) {
+  const { user, isAdmin } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [animatedValues] = useState(STEPS.map(() => new Animated.Value(0)));
   const selectedOrderId = route.params?.orderId;
 
   useEffect(() => {
     loadOrders();
   }, []);
 
+  useEffect(() => {
+    if (orders.length > 0) {
+      const currentStep = getCurrentStep(orders[0].status);
+      animateProgress(currentStep);
+    }
+  }, [orders]);
+
+  const animateProgress = (stepIndex) => {
+    Animated.sequence(
+      STEPS.map((_, index) => 
+        Animated.timing(animatedValues[index], {
+          toValue: index <= stepIndex ? 1 : 0,
+          duration: 500,
+          useNativeDriver: false
+        })
+      )
+    ).start();
+  };
+
   const loadOrders = async () => {
     try {
       const savedOrders = await AsyncStorage.getItem('orders');
       if (savedOrders) {
-        setOrders(JSON.parse(savedOrders));
+        let allOrders = JSON.parse(savedOrders);
+        if (!isAdmin) {
+          allOrders = allOrders.filter(o => o.username === user?.username);
+        }
+        setOrders(allOrders);
       }
     } catch (error) {
       console.error('Error loading orders:', error);
@@ -42,6 +68,16 @@ export default function OrderTrackingScreen({ route }) {
   const getCurrentStep = (status) => {
     const index = STEPS.findIndex(s => s.key === status);
     return index >= 0 ? index : 0;
+  };
+
+  const getStatusTime = (status) => {
+    const times = {
+      'Pendiente': '2-5 min',
+      'Preparando': '10-15 min',
+      'Enviado': '5-10 min',
+      'Entregado': 'Listo'
+    };
+    return times[status] || '-';
   };
 
   if (loading) {
@@ -57,7 +93,10 @@ export default function OrderTrackingScreen({ route }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Estado del Pedido</Text>
+        <Text style={styles.headerTitle}>🚚 Estado del Pedido</Text>
+        {!isAdmin && (
+          <Text style={styles.headerSubtitle}>Hola {user?.username}</Text>
+        )}
       </View>
 
       {activeOrders.length === 0 ? (
@@ -70,51 +109,116 @@ export default function OrderTrackingScreen({ route }) {
           const currentStep = getCurrentStep(order.status);
           return (
             <View key={order.id} style={styles.orderCard}>
-              <Text style={styles.orderId}>Pedido #{order.id}</Text>
+              <View style={styles.orderHeader}>
+                <View>
+                  <Text style={styles.orderId}>Pedido #{order.id}</Text>
+                  {!isAdmin && (
+                    <Text style={styles.orderUser}>Usuario: {order.username}</Text>
+                  )}
+                </View>
+                <View style={styles.statusBadge}>
+                  <Text style={styles.statusText}>{order.status}</Text>
+                </View>
+              </View>
+              
               <Text style={styles.orderDate}>
-                {new Date(order.date).toLocaleDateString('es-MX')}
+                {new Date(order.date).toLocaleDateString('es-MX', {
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
               </Text>
               
-              <View style={styles.stepsContainer}>
-                {STEPS.map((step, index) => (
-                  <View key={step.key} style={styles.stepRow}>
-                    <View style={[
-                      styles.stepCircle,
-                      index <= currentStep && styles.stepActive
-                    ]}>
-                      <Text style={styles.stepEmoji}>{step.emoji}</Text>
-                    </View>
-                    <View style={styles.stepInfo}>
-                      <Text style={[
-                        styles.stepLabel,
-                        index <= currentStep && styles.stepLabelActive
+              <View style={styles.progressContainer}>
+                {STEPS.map((step, index) => {
+                  const isActive = index <= currentStep;
+                  const progress = animatedValues[index].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1]
+                  });
+                  
+                  return (
+                    <View key={step.key} style={styles.stepContainer}>
+                      <Animated.View style={[
+                        styles.stepCircle,
+                        isActive ? styles.stepActive : styles.stepInactive,
+                        { 
+                          transform: [{ scale: isActive ? 1 : 0.9 }]
+                        }
                       ]}>
-                        {step.label}
-                      </Text>
-                      <Text style={styles.stepDescription}>
-                        {step.description}
-                      </Text>
+                        <Text style={styles.stepEmoji}>{step.emoji}</Text>
+                        {isActive && (
+                          <Animated.View style={[
+                            styles.pulseDot,
+                            { opacity: progress }
+                          ]} />
+                        )}
+                      </Animated.View>
+                      
+                      <View style={styles.stepInfo}>
+                        <Text style={[
+                          styles.stepLabel,
+                          isActive && styles.stepLabelActive
+                        ]}>
+                          {step.label}
+                        </Text>
+                        <Text style={[
+                          styles.stepTime,
+                          isActive && styles.stepTimeActive
+                        ]}>
+                          ⏱️ {getStatusTime(step.key)}
+                        </Text>
+                        {isActive && (
+                          <Text style={styles.stepDescription}>
+                            {step.description}
+                          </Text>
+                        )}
+                      </View>
+                      
+                      {index < STEPS.length - 1 && (
+                        <View style={[
+                          styles.connector,
+                          index < currentStep && styles.connectorActive
+                        ]}>
+                          <Animated.View style={[
+                            styles.connectorFill,
+                            {
+                              height: animatedValues[index].interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['0%', '100%']
+                              })
+                            }
+                          ]} />
+                        </View>
+                      )}
                     </View>
-                    {index < STEPS.length - 1 && (
-                      <View style={[
-                        styles.connector,
-                        index < currentStep && styles.connectorActive
-                      ]} />
-                    )}
+                  );
+                })}
+              </View>
+
+              <View style={styles.orderItems}>
+                <Text style={styles.itemsTitle}>📋 Tu orden:</Text>
+                {order.items.map((item, idx) => (
+                  <View key={idx} style={styles.itemRow}>
+                    <Text style={styles.itemText}>• {item.quantity}x {item.name}</Text>
+                    <Text style={styles.itemPrice}>${item.price * item.quantity}</Text>
                   </View>
                 ))}
               </View>
 
-              <View style={styles.orderItems}>
-                <Text style={styles.itemsTitle}>Tu orden:</Text>
-                {order.items.map((item, idx) => (
-                  <Text key={idx} style={styles.itemText}>
-                    {item.quantity}x {item.name}
-                  </Text>
-                ))}
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total:</Text>
+                <Text style={styles.total}>${order.total}</Text>
               </View>
 
-              <Text style={styles.total}>Total: ${order.total}</Text>
+              {!isAdmin && (
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxText}>
+                    ℹ️ Usa el código #{order.id} al recibir tu pedido
+                  </Text>
+                </View>
+              )}
             </View>
           );
         })
@@ -138,6 +242,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.white,
   },
+  headerSubtitle: {
+    fontSize: 14,
+    color: COLORS.white,
+    opacity: 0.9,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -156,66 +265,113 @@ const styles = StyleSheet.create({
   orderCard: {
     backgroundColor: COLORS.white,
     margin: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
+    elevation: 3,
+  },
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
   },
   orderId: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1A1A1A',
   },
-  orderDate: {
-    fontSize: 14,
+  orderUser: {
+    fontSize: 12,
     color: '#999',
-    marginBottom: 15,
   },
-  stepsContainer: {
-    marginBottom: 15,
+  statusBadge: {
+    backgroundColor: COLORS.green,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
   },
-  stepRow: {
+  statusText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  orderDate: {
+    fontSize: 12,
+    color: '#999',
+    marginBottom: 20,
+  },
+  progressContainer: {
+    marginBottom: 20,
+  },
+  stepContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     position: 'relative',
+    marginBottom: 15,
   },
   stepCircle: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#E0E0E0',
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepActive: {
     backgroundColor: COLORS.green,
   },
+  stepInactive: {
+    backgroundColor: '#E0E0E0',
+  },
   stepEmoji: {
     fontSize: 24,
+  },
+  pulseDot: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: COLORS.green,
   },
   stepInfo: {
     flex: 1,
     marginLeft: 12,
   },
   stepLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#999',
   },
   stepLabelActive: {
     color: '#1A1A1A',
     fontWeight: 'bold',
   },
+  stepTime: {
+    fontSize: 11,
+    color: '#BBB',
+  },
+  stepTimeActive: {
+    color: COLORS.green,
+    fontWeight: 'bold',
+  },
   stepDescription: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: 11,
+    color: '#666',
+    marginTop: 2,
   },
   connector: {
     position: 'absolute',
     left: 24,
     top: 50,
     width: 2,
-    height: 20,
+    height: 30,
     backgroundColor: '#E0E0E0',
+    zIndex: -1,
   },
   connectorActive: {
+    backgroundColor: COLORS.green,
+  },
+  connectorFill: {
+    width: '100%',
     backgroundColor: COLORS.green,
   },
   orderItems: {
@@ -228,16 +384,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#666',
-    marginBottom: 5,
+    marginBottom: 8,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   itemText: {
     fontSize: 14,
+    color: '#1A1A1A',
+  },
+  itemPrice: {
+    fontSize: 14,
+    color: '#666',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    paddingTop: 12,
+  },
+  totalLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#1A1A1A',
   },
   total: {
     fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.green,
-    textAlign: 'right',
+  },
+  infoBox: {
+    backgroundColor: '#FFF5E6',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  infoBoxText: {
+    fontSize: 12,
+    color: COLORS.gold,
+    fontWeight: 'bold',
   },
 });
