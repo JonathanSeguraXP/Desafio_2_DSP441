@@ -177,7 +177,7 @@ export default function FoodSelectionScreen() {
           <Text style={styles.totalPrice}>${calculateTotal()}</Text>
         </View>
         <TouchableOpacity style={styles.addButton} onPress={addToCart}>
-          <Text style={styles.addButtonText}>Agregar al carrito</Text>
+          <Text style={styles.addButtonText}>🛒 Agregar al carrito</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

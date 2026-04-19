@@ -80,7 +80,7 @@ export default function PurchaseHistoryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Historial de Compras</Text>
+        <Text style={styles.headerTitle}>📋 Historial de Compras</Text>
       </View>
 
       {orders.length === 0 ? (

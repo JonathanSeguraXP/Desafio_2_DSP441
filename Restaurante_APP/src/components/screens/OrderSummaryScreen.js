@@ -92,12 +92,12 @@ export default function OrderSummaryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Resumen del Pedido</Text>
+        <Text style={styles.headerTitle}>🛒 Resumen del Pedido</Text>
       </View>
 
       {cartItems.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Tu carrito está vacío</Text>
+          <Text style={styles.emptyText}>🛒 Tu carrito está vacío</Text>
           <Text style={styles.emptySubtext}>Agrega comida desde el menú</Text>
         </View>
       ) : (
@@ -115,12 +115,12 @@ export default function OrderSummaryScreen() {
               <Text style={styles.totalPrice}>${calculateTotal()}</Text>
             </View>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.clearButton} onPress={clearCart}>
-                <Text style={styles.clearButtonText}>Vaciar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.orderButton} onPress={placeOrder}>
-                <Text style={styles.orderButtonText}>Hacer Pedido</Text>
-              </TouchableOpacity>
+<TouchableOpacity style={styles.clearButton} onPress={clearCart}>
+                  <Text style={styles.clearButtonText}>🗑️ Vaciar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.orderButton} onPress={placeOrder}>
+                  <Text style={styles.orderButtonText}>✅ Hacer Pedido</Text>
+                </TouchableOpacity>
             </View>
           </View>
         </>
