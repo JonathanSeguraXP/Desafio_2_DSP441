@@ -16,7 +16,7 @@ import { useAuth } from './context/AuthContext';
 const LogoImage = require('../../../assets/images/logo_resta.png');
 
 const LoginScreen = () => {
-  const [username, setUsernrame] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
