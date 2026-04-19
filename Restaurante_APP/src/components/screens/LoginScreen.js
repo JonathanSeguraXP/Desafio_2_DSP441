@@ -164,19 +164,9 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </Animated.View>
 
-        <View style={styles.hintContainer}>
-          <Text style={styles.hintTitle}>Credenciales:</Text>
-          <View style={styles.credentialsRow}>
-            <View style={styles.credentialCard}>
-              <Text style={styles.credentialType}>👑 Admin</Text>
-              <Text style={styles.credentialText}>admin / 123456</Text>
-            </View>
-            <View style={styles.credentialCard}>
-              <Text style={styles.credentialType}>👤 Cliente</Text>
-              <Text style={styles.credentialText}>cliente / cliente123</Text>
-            </View>
-          </View>
-        </View>
+        <TouchableOpacity style={styles.forgotButton}>
+          <Text style={styles.forgotButtonText}>¿Olvidaste tu contraseña?</Text>
+        </TouchableOpacity>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -323,6 +313,15 @@ const styles = StyleSheet.create({
   credentialText: {
     color: '#FFFFFF',
     fontSize: 11,
+  },
+  forgotButton: {
+    marginTop: 15,
+    alignItems: 'center',
+  },
+  forgotButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 });
 
