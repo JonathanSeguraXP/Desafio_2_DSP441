@@ -1,19 +1,29 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 const DRINK_IMAGES = {
-  101: '🥛',
-  102: '🩸',
-  103: '☕',
-  104: '🍹',
-  105: '🍺',
+  101: require('../../assets/images/horchata.png'),
+  102: require('../../assets/images/jamaica_juice.png'),
+  103: require('../../assets/images/atole.png'),
+  104: require('../../assets/images/tamarindo.png'),
+  105: require('../../assets/images/cerveza.png'),
 };
 
 export default function DrinkCard({ drink, quantity, onIncrease, onDecrease }) {
+  const hasImage = DRINK_IMAGES[drink.id];
+
   return (
     <View style={styles.card}>
       <View style={styles.imageContainer}>
-        <Text style={styles.emoji}>{DRINK_IMAGES[drink.id] || '🥤'}</Text>
+        {hasImage ? (
+          <Image 
+            source={hasImage} 
+            style={styles.drinkImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text style={styles.emoji}>{'🥤'}</Text>
+        )}
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{drink.name}</Text>
@@ -55,6 +65,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  drinkImage: {
+    width: 60,
+    height: 60,
   },
   emoji: {
     fontSize: 32,
